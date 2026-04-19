@@ -1,0 +1,1039 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaTensor | Water Recovery Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080c18;
+      --surface:  #0e1422;
+      --card:     rgba(255,255,255,0.03);
+      --border:   rgba(255,255,255,0.07);
+      --blue:     #2563eb;
+      --cyan:     #06b6d4;
+      --green:    #10b981;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --text:     #f1f5f9;
+      --muted:    #64748b;
+      --radius:   12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-feature-settings: "tnum";
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 3px; }
+
+    /* ── UTILITY ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 28px; }
+    .section { padding: 100px 0; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: clamp(26px, 3.5vw, 40px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .section-sub {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.75;
+    }
+
+    .glass {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* ── DOT INDICATORS ── */
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .dot-red    { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+    .dot-amber  { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .dot-green  { background: #10b981; box-shadow: 0 0 6px #10b981; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 28px;
+      height: 60px;
+      background: rgba(8,12,24,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 17px; font-weight: 700; color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .nav-logo-dot {
+      width: 10px; height: 10px; border-radius: 3px;
+      background: var(--blue);
+      box-shadow: 0 0 8px rgba(37,99,235,0.7);
+      flex-shrink: 0;
+    }
+    .nav-cta {
+      background: var(--blue);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 8px 18px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, opacity 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .nav-cta:hover { background: #1d4ed8; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      position: relative; overflow: hidden;
+      padding-top: 60px;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 0%, rgba(37,99,235,0.16) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 85%, rgba(6,182,212,0.10) 0%, transparent 60%),
+        var(--bg);
+    }
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(6,182,212,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.035) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 20%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 20%, transparent 100%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 760px; padding: 0 24px; }
+    .hero-badge {
+      display: inline-flex; align-items: center;
+      border: 1px solid rgba(6,182,212,0.3);
+      border-radius: 100px; padding: 5px 16px;
+      font-size: 12px; font-weight: 600; color: var(--cyan);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .hero-title {
+      font-size: clamp(30px, 5vw, 58px); font-weight: 800;
+      line-height: 1.1; margin-bottom: 24px;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, #fff 30%, var(--cyan) 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: clamp(15px, 1.8vw, 18px); color: var(--muted);
+      line-height: 1.75; margin-bottom: 44px; font-weight: 400;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--blue);
+      color: #fff; border: none; border-radius: 100px;
+      padding: 15px 36px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 32px rgba(37,99,235,0.35);
+      text-decoration: none; font-family: 'Inter', sans-serif;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 0 48px rgba(37,99,235,0.5); }
+
+    .hero-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-top: 0;
+    }
+
+    /* ── INPUT PANEL ── */
+    #inputs { background: var(--surface); }
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px; margin-top: 48px;
+    }
+    .input-card {
+      padding: 28px;
+      border-left: 3px solid var(--cyan);
+    }
+    .input-card-header {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .field { margin-bottom: 24px; }
+    .field label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 10px;
+    }
+    .field label .val-display {
+      font-size: 13px; font-weight: 700; color: var(--cyan);
+      font-feature-settings: "tnum";
+    }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,0.08); outline: none; cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--blue);
+      cursor: pointer; box-shadow: 0 0 8px rgba(37,99,235,0.5);
+      transition: transform 0.15s, box-shadow 0.15s;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 14px rgba(37,99,235,0.7);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15);
+      background: var(--blue); cursor: pointer;
+    }
+    select, input[type="number"] {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 14px;
+      font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input[type="number"]:focus { border-color: var(--cyan); }
+    select option { background: #0e1422; }
+    .field-note {
+      font-size: 11px; color: var(--muted); margin-top: 8px;
+      line-height: 1.5;
+    }
+    .calc-btn-wrap { text-align: center; margin-top: 44px; }
+    .btn-calc {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--blue);
+      color: #fff; border: none; border-radius: 8px;
+      padding: 16px 48px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 32px rgba(37,99,235,0.35);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+    }
+    .btn-calc:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 0 48px rgba(37,99,235,0.5); }
+
+    /* ── OUTPUT PANEL ── */
+    #outputs { background: var(--bg); }
+    #outputs-inner {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      pointer-events: none;
+    }
+    #outputs-inner.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-top: 48px;
+    }
+    @media (max-width: 900px) {
+      .output-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .output-grid { grid-template-columns: 1fr; }
+    }
+
+    .out-card {
+      padding: 24px; position: relative; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .out-card:hover { transform: translateY(-3px); }
+    .out-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+    .out-card.featured {
+      grid-column: span 2;
+      border-color: rgba(6,182,212,0.2);
+      box-shadow: 0 0 40px rgba(6,182,212,0.06);
+    }
+    @media (max-width: 560px) { .out-card.featured { grid-column: span 1; } }
+
+    .card-icon-wrap {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(37,99,235,0.12);
+      border: 1px solid rgba(37,99,235,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .card-icon-wrap svg { width: 18px; height: 18px; }
+
+    .card-title {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+    }
+    .big-num {
+      font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      font-feature-settings: "tnum";
+      letter-spacing: -0.02em;
+    }
+    .big-num.featured-num {
+      font-size: clamp(36px, 5.5vw, 64px);
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .unit { font-size: 12px; color: var(--muted); margin-top: 6px; font-weight: 400; }
+
+    .sub-rows { margin-top: 18px; display: flex; flex-direction: column; gap: 6px; }
+    .sub-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; padding: 8px 12px;
+      background: rgba(255,255,255,0.03); border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .sub-row .label-text { color: var(--muted); }
+    .sub-row .val { font-weight: 700; color: var(--cyan); font-feature-settings: "tnum"; }
+
+    .progress-wrap { margin-top: 18px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--muted); margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      height: 6px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .status-badge {
+      display: inline-flex; align-items: center;
+      padding: 8px 14px; border-radius: 6px;
+      font-size: 12px; font-weight: 700; margin-top: 14px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .status-positive { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .status-neutral  { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+    .status-negative { background: rgba(239,68,68,0.1);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
+
+    .risk-card-high   { background: rgba(239,68,68,0.07);  border-color: rgba(239,68,68,0.25); }
+    .risk-card-medium { background: rgba(245,158,11,0.07); border-color: rgba(245,158,11,0.25); }
+    .risk-card-low    { background: rgba(16,185,129,0.07); border-color: rgba(16,185,129,0.25); }
+
+    .risk-label {
+      font-size: 22px; font-weight: 800; margin-top: 10px;
+      display: flex; align-items: center; gap: 4px;
+      letter-spacing: 0.04em;
+    }
+    .risk-label.high   { color: var(--red); }
+    .risk-label.medium { color: var(--amber); }
+    .risk-label.low    { color: var(--green); }
+
+    /* ── BEFORE / AFTER ── */
+    #compare { background: var(--surface); }
+    #compare-inner {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s ease 0.15s, transform 0.6s ease 0.15s;
+      pointer-events: none;
+    }
+    #compare-inner.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    .compare-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 48px;
+    }
+    @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+
+    .compare-card { padding: 28px; }
+    .compare-card.before { border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.04); }
+    .compare-card.after  { border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.04); }
+
+    .compare-card-header {
+      font-size: 13px; font-weight: 700; margin-bottom: 24px;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .compare-card.before .compare-card-header { color: #ef4444; }
+    .compare-card.after  .compare-card-header { color: #10b981; }
+
+    .compare-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row .label { color: var(--muted); font-size: 13px; }
+    .compare-row .value { font-weight: 600; font-size: 13px; }
+    .compare-card.before .value { color: #ef4444; }
+    .compare-card.after  .value { color: #10b981; }
+
+    /* ── PILOT ── */
+    #pilot { background: var(--bg); }
+    #pilot-inner {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s ease 0.25s, transform 0.6s ease 0.25s;
+      pointer-events: none;
+    }
+    #pilot-inner.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    .pilot-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 48px; align-items: start;
+    }
+    @media (max-width: 700px) { .pilot-layout { grid-template-columns: 1fr; } }
+
+    .pilot-card { padding: 28px; }
+    .pilot-card-title {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+
+    .pilot-highlight {
+      background: rgba(37,99,235,0.08);
+      border: 1px solid rgba(37,99,235,0.25);
+      border-radius: 8px; padding: 16px 20px; margin-top: 24px;
+      font-size: 13px; font-style: italic; font-weight: 500;
+      color: rgba(6,182,212,0.9); line-height: 1.65;
+    }
+
+    .pilot-results { display: flex; flex-direction: column; gap: 14px; }
+    .pilot-result-card { padding: 22px; }
+    .p-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    .p-value {
+      font-size: 26px; font-weight: 800; color: var(--text);
+      font-feature-settings: "tnum"; letter-spacing: -0.02em;
+    }
+    .p-unit { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 80px 28px; text-align: center;
+    }
+    .footer-title {
+      font-size: clamp(20px, 3vw, 32px); font-weight: 700;
+      max-width: 560px; margin: 0 auto 14px;
+      color: var(--text); letter-spacing: -0.01em;
+    }
+    .footer-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+    .btn-contact {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: transparent;
+      border: 1px solid var(--cyan); color: var(--cyan);
+      border-radius: 8px; padding: 12px 32px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.02em;
+    }
+    .btn-contact:hover { background: var(--cyan); color: var(--bg); }
+    .footer-copy { margin-top: 48px; font-size: 12px; color: var(--muted); }
+
+    /* ── FLOATING DROPS ── */
+    .drops { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .drop {
+      position: absolute;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      background: linear-gradient(180deg, rgba(6,182,212,0.20), rgba(37,99,235,0.07));
+      animation: floatDrop linear infinite;
+    }
+    @keyframes floatDrop {
+      0%   { transform: translateY(110vh) scale(1) rotate(0deg); opacity: 0; }
+      8%   { opacity: 1; }
+      92%  { opacity: 0.45; }
+      100% { transform: translateY(-10vh) scale(1.08) rotate(5deg); opacity: 0; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.12); }
+      50%       { box-shadow: 0 0 40px rgba(6,182,212,0.28); }
+    }
+    .pulse { animation: pulse-glow 3s ease-in-out infinite; }
+
+    @keyframes count-up {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .count-anim { animation: count-up 0.35s ease forwards; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    AquaTensor
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('inputs').scrollIntoView({behavior:'smooth'})">Run Simulation</button>
+</nav>
+
+<!-- SCREEN 1 — HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="drops" id="drops"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Data Center Water Intelligence</div>
+    <h1 class="hero-title"><span>Simulate Water Recovery</span><br>from Data Center Waste Heat</h1>
+    <p class="hero-sub">Estimate how much water your facility can recover using AquaTensor — and convert your largest operational liability into a measurable sustainability asset.</p>
+    <a href="#inputs" class="btn-primary">Run Simulation</a>
+  </div>
+</section>
+<div class="hero-divider"></div>
+
+<!-- SCREEN 2 — INPUT PANEL -->
+<section id="inputs" class="section">
+  <div class="container">
+    <div class="section-label">Configuration</div>
+    <h2 class="section-title">Facility Parameters</h2>
+    <p class="section-sub">Define your data center profile. All outputs update automatically once you run the simulation.</p>
+
+    <div class="input-grid">
+
+      <!-- Section A -->
+      <div class="glass input-card">
+        <div class="input-card-header">Section A — Facility Basics</div>
+
+        <div class="field">
+          <label>IT Load (MW) <span class="val-display" id="itload-val">20 MW</span></label>
+          <input type="range" id="itload" min="5" max="100" value="20" step="1" />
+        </div>
+
+        <div class="field">
+          <label>Location</label>
+          <select id="location">
+            <option>Bangalore</option>
+            <option>Chennai</option>
+            <option>Hyderabad</option>
+            <option>Mumbai</option>
+            <option>Delhi</option>
+            <option>Pune</option>
+            <option>Kolkata</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Cooling Type</label>
+          <select id="cooling">
+            <option>Air Cooling</option>
+            <option>Evaporative Cooling</option>
+            <option>Liquid Cooling</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section B -->
+      <div class="glass input-card">
+        <div class="input-card-header">Section B — Water Usage</div>
+
+        <div class="field">
+          <label>Water Consumption (litres / day)</label>
+          <input type="number" id="water-consumption" min="0" step="1000" />
+          <div class="field-note">Auto-calculated from IT Load at 150,000 L/MW/day. Override as needed.</div>
+        </div>
+      </div>
+
+      <!-- Section C -->
+      <div class="glass input-card">
+        <div class="input-card-header">Section C — Heat Recovery Assumptions</div>
+
+        <div class="field">
+          <label>Waste Heat Available <span class="val-display" id="waste-heat-val">30%</span></label>
+          <input type="range" id="waste-heat" min="20" max="50" value="30" step="1" />
+        </div>
+
+        <div class="field">
+          <label>Recoverable Heat Efficiency <span class="val-display" id="recovery-eff-val">50%</span></label>
+          <input type="range" id="recovery-eff" min="30" max="70" value="50" step="1" />
+        </div>
+      </div>
+
+    </div>
+
+    <div class="calc-btn-wrap">
+      <button class="btn-calc" id="calc-btn" onclick="runCalculation()">Calculate Results</button>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 3 — OUTPUT PANEL -->
+<section id="outputs" class="section">
+  <div class="container">
+    <div class="section-label">Simulation Output</div>
+    <h2 class="section-title">Results</h2>
+    <p class="section-sub">Projected performance based on your facility parameters.</p>
+
+    <div id="outputs-inner">
+      <div class="output-grid">
+
+        <!-- Card 1: Heat Available -->
+        <div class="glass out-card">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div class="card-title">Heat Available</div>
+          <div class="big-num" id="out-recovered-heat">—</div>
+          <div class="unit">MW Recovered Heat</div>
+          <div class="sub-rows">
+            <div class="sub-row"><span class="label-text">Total Heat</span><span class="val" id="out-total-heat">—</span></div>
+            <div class="sub-row"><span class="label-text">Usable Heat</span><span class="val" id="out-usable-heat">—</span></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Water Production (FEATURED) -->
+        <div class="glass out-card featured pulse">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+          </div>
+          <div class="card-title">Water Production — Primary Metric</div>
+          <div class="big-num featured-num" id="out-water-produced">—</div>
+          <div class="unit">Litres Per Day Recovered</div>
+        </div>
+
+        <!-- Card 3: Net Water Impact -->
+        <div class="glass out-card">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="20" x2="12" y2="4"/><polyline points="6 10 12 4 18 10"/>
+            </svg>
+          </div>
+          <div class="card-title">Net Water Impact</div>
+          <div class="big-num" id="out-net-water">—</div>
+          <div class="unit">L / day net</div>
+          <div id="out-water-status"></div>
+        </div>
+
+        <!-- Card 4: % Water Offset -->
+        <div class="glass out-card">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="card-title">Water Offset</div>
+          <div class="big-num" id="out-offset-pct">—</div>
+          <div class="unit">of consumption offset</div>
+          <div class="progress-wrap">
+            <div class="progress-label"><span>0%</span><span>100%</span></div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="out-offset-bar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Energy Savings -->
+        <div class="glass out-card">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div class="card-title">Energy Savings</div>
+          <div class="big-num" id="out-energy-savings">—</div>
+          <div class="unit">MW saved</div>
+          <div class="sub-rows">
+            <div class="sub-row"><span class="label-text">Cooling Load</span><span class="val" id="out-cooling-load">—</span></div>
+          </div>
+        </div>
+
+        <!-- Card 6: Permit Risk -->
+        <div class="glass out-card" id="out-risk-card">
+          <div class="card-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="card-title">Permit Risk Indicator</div>
+          <div class="risk-label" id="out-risk-label">—</div>
+          <div class="unit" id="out-risk-desc" style="margin-top:10px">Run simulation to assess risk level</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 4 — BEFORE vs AFTER -->
+<section id="compare" class="section">
+  <div class="container">
+    <div class="section-label">Comparative Analysis</div>
+    <h2 class="section-title">Before vs. After AquaTensor</h2>
+    <p class="section-sub">A side-by-side view of your facility's water and risk profile with and without deployment.</p>
+
+    <div id="compare-inner">
+      <div class="compare-grid">
+
+        <div class="glass compare-card before">
+          <div class="compare-card-header">
+            <span class="dot dot-red"></span>Without AquaTensor
+          </div>
+          <div class="compare-row">
+            <span class="label">Water Usage</span>
+            <span class="value" id="cmp-before-water">—</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Heat Wasted</span>
+            <span class="value">High</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Water Recovered</span>
+            <span class="value">0 L / day</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Permit Risk</span>
+            <span class="value">High Risk</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Sustainability Score</span>
+            <span class="value">Low</span>
+          </div>
+        </div>
+
+        <div class="glass compare-card after">
+          <div class="compare-card-header">
+            <span class="dot dot-green"></span>With AquaTensor
+          </div>
+          <div class="compare-row">
+            <span class="label">Water Reduced By</span>
+            <span class="value" id="cmp-after-reduced">—</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Heat Utilised</span>
+            <span class="value">Optimised</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Water Recovered</span>
+            <span class="value" id="cmp-after-recovered">—</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Permit Risk</span>
+            <span class="value" id="cmp-after-risk">—</span>
+          </div>
+          <div class="compare-row">
+            <span class="label">Sustainability Score</span>
+            <span class="value">High</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 5 — PILOT SIMULATION -->
+<section id="pilot" class="section">
+  <div class="container">
+    <div class="section-label">Pilot Mode</div>
+    <h2 class="section-title">Pilot Simulation</h2>
+    <p class="section-sub">Validate water neutrality at reduced scale before committing to full deployment.</p>
+
+    <div id="pilot-inner">
+      <div class="pilot-layout">
+
+        <div class="glass pilot-card">
+          <div class="pilot-card-title">Configure Pilot Scale</div>
+
+          <div class="field">
+            <label>Pilot Size (MW) <span class="val-display" id="pilot-size-val">5 MW</span></label>
+            <input type="range" id="pilot-size" min="1" max="20" value="5" step="1" />
+          </div>
+
+          <div class="pilot-highlight">
+            "This pilot can validate water neutrality before full-scale deployment."
+          </div>
+        </div>
+
+        <div class="pilot-results">
+          <div class="glass pilot-result-card">
+            <div class="p-label">Water Recovered in Pilot</div>
+            <div class="p-value" id="pilot-water">—</div>
+            <div class="p-unit">Litres Per Day</div>
+          </div>
+          <div class="glass pilot-result-card">
+            <div class="p-label">Offset in Pilot</div>
+            <div class="p-value" id="pilot-offset">—</div>
+            <div class="p-unit">of pilot water consumption offset</div>
+          </div>
+          <div class="glass pilot-result-card">
+            <div class="p-label">Estimated Impact — 90 Days</div>
+            <div class="p-value" id="pilot-90days">—</div>
+            <div class="p-unit">Total Litres Recovered</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">Interested in validating this for your facility?</div>
+  <p class="footer-sub">Let's run a custom simulation tailored to your exact infrastructure and water goals.</p>
+  <button class="btn-contact" onclick="alert('Contact us at hello@aquatensor.io to schedule your custom simulation.')">
+    Request Custom Simulation
+  </button>
+  <div class="footer-copy">© 2025 AquaTensor · Turning waste heat into water · Built for sustainable data centers</div>
+</footer>
+
+<script>
+  // ── FLOATING DROPS
+  (function spawnDrops() {
+    const container = document.getElementById('drops');
+    const sizes = [7, 10, 13, 17, 11, 15];
+    for (let i = 0; i < 20; i++) {
+      const d = document.createElement('div');
+      d.className = 'drop';
+      const sz = sizes[Math.floor(Math.random() * sizes.length)];
+      d.style.cssText = `
+        width:${sz}px;
+        height:${Math.round(sz * 1.35)}px;
+        left:${Math.random() * 100}%;
+        animation-duration:${9 + Math.random() * 13}s;
+        animation-delay:${-Math.random() * 22}s;
+        opacity:${0.25 + Math.random() * 0.45};
+      `;
+      container.appendChild(d);
+    }
+  })();
+
+  // ── STATE
+  let userEditedWater = false;
+  let lastResults = null;
+
+  // ── HELPERS
+  function fmt(n, decimals = 0) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return Number(n.toFixed(decimals)).toLocaleString('en-IN');
+  }
+  function fmtMW(n) { return fmt(n, 2) + ' MW'; }
+
+  // ── ELEMENTS
+  const itloadSlider    = document.getElementById('itload');
+  const wasteHeatSlider = document.getElementById('waste-heat');
+  const recovEffSlider  = document.getElementById('recovery-eff');
+  const waterInput      = document.getElementById('water-consumption');
+  const pilotSlider     = document.getElementById('pilot-size');
+
+  // ── SLIDER EVENTS
+  itloadSlider.addEventListener('input', function () {
+    document.getElementById('itload-val').textContent = this.value + ' MW';
+    if (!userEditedWater) {
+      waterInput.value = parseFloat(this.value) * 150000;
+    }
+    if (lastResults) runCalculation();
+  });
+
+  wasteHeatSlider.addEventListener('input', function () {
+    document.getElementById('waste-heat-val').textContent = this.value + '%';
+    if (lastResults) runCalculation();
+  });
+
+  recovEffSlider.addEventListener('input', function () {
+    document.getElementById('recovery-eff-val').textContent = this.value + '%';
+    if (lastResults) runCalculation();
+  });
+
+  waterInput.addEventListener('input', function () {
+    userEditedWater = true;
+    if (lastResults) runCalculation();
+  });
+
+  pilotSlider.addEventListener('input', function () {
+    document.getElementById('pilot-size-val').textContent = this.value + ' MW';
+    updatePilot();
+  });
+
+  // ── INIT
+  waterInput.value = 20 * 150000;
+
+  // ── CORE CALCULATION
+  function runCalculation() {
+    const inputMW            = parseFloat(itloadSlider.value);
+    const wasteHeatPercent   = parseFloat(wasteHeatSlider.value);
+    const recoveryEfficiency = parseFloat(recovEffSlider.value);
+    const rawWater           = parseFloat(waterInput.value) || (inputMW * 150000);
+
+    const IT_Load       = inputMW;
+    const totalHeat     = IT_Load * 0.8;
+    const usableHeat    = totalHeat * (wasteHeatPercent / 100);
+    const recoveredHeat = usableHeat * (recoveryEfficiency / 100);
+    const waterProduced = recoveredHeat * 15000;
+    const waterConsumed = rawWater;
+    const netWater      = waterProduced - waterConsumed;
+    const offsetPercent = (waterProduced / waterConsumed) * 100;
+    const coolingLoad   = IT_Load * 0.3;
+    const energySavings = coolingLoad * 0.3;
+
+    lastResults = { IT_Load, totalHeat, usableHeat, recoveredHeat,
+                    waterProduced, waterConsumed, netWater,
+                    offsetPercent, coolingLoad, energySavings };
+
+    renderOutputs(lastResults);
+    renderCompare(lastResults);
+    updatePilot();
+
+    ['outputs-inner', 'compare-inner', 'pilot-inner'].forEach(id => {
+      document.getElementById(id).classList.add('visible');
+    });
+
+    setTimeout(() => {
+      document.getElementById('outputs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  // ── RENDER OUTPUTS
+  function renderOutputs(r) {
+    animateNum('out-recovered-heat', r.recoveredHeat.toFixed(2) + ' MW');
+    animateNum('out-total-heat',     fmtMW(r.totalHeat));
+    animateNum('out-usable-heat',    fmtMW(r.usableHeat));
+    animateNum('out-water-produced', fmt(r.waterProduced) + ' L');
+    animateNum('out-net-water',      fmt(Math.abs(r.netWater)) + ' L');
+
+    const statusEl = document.getElementById('out-water-status');
+    const pct5 = r.waterConsumed * 0.05;
+    if (r.netWater > pct5) {
+      statusEl.innerHTML = '<div class="status-badge status-positive">Water Positive</div>';
+    } else if (r.netWater >= -pct5) {
+      statusEl.innerHTML = '<div class="status-badge status-neutral">Water Neutral</div>';
+    } else {
+      statusEl.innerHTML = '<div class="status-badge status-negative">Water Negative</div>';
+    }
+
+    const clampedPct = Math.min(r.offsetPercent, 100);
+    animateNum('out-offset-pct', r.offsetPercent.toFixed(1) + '%');
+    document.getElementById('out-offset-bar').style.width = clampedPct + '%';
+
+    animateNum('out-energy-savings', r.energySavings.toFixed(2) + ' MW');
+    animateNum('out-cooling-load',   fmtMW(r.coolingLoad));
+
+    const riskCard  = document.getElementById('out-risk-card');
+    const riskLabel = document.getElementById('out-risk-label');
+    const riskDesc  = document.getElementById('out-risk-desc');
+    riskCard.classList.remove('risk-card-high', 'risk-card-medium', 'risk-card-low');
+    riskLabel.classList.remove('high', 'medium', 'low');
+
+    if (r.offsetPercent < 20) {
+      riskCard.classList.add('risk-card-high');
+      riskLabel.classList.add('high');
+      riskLabel.innerHTML = '<span class="dot dot-red"></span>High Risk';
+      riskDesc.textContent = 'Offset below 20% — significant permit exposure.';
+    } else if (r.offsetPercent <= 60) {
+      riskCard.classList.add('risk-card-medium');
+      riskLabel.classList.add('medium');
+      riskLabel.innerHTML = '<span class="dot dot-amber"></span>Medium Risk';
+      riskDesc.textContent = 'Offset 20–60% — moderate permit risk, room to improve.';
+    } else {
+      riskCard.classList.add('risk-card-low');
+      riskLabel.classList.add('low');
+      riskLabel.innerHTML = '<span class="dot dot-green"></span>Low Risk';
+      riskDesc.textContent = 'Offset above 60% — strong water neutrality position.';
+    }
+  }
+
+  // ── RENDER COMPARE
+  function renderCompare(r) {
+    document.getElementById('cmp-before-water').textContent    = fmt(r.waterConsumed) + ' L / day';
+    document.getElementById('cmp-after-reduced').textContent   = fmt(r.waterProduced) + ' L / day';
+    document.getElementById('cmp-after-recovered').textContent = fmt(r.waterProduced) + ' L / day';
+
+    let riskText;
+    if (r.offsetPercent < 20)       riskText = 'High Risk';
+    else if (r.offsetPercent <= 60) riskText = 'Medium Risk';
+    else                            riskText = 'Low Risk';
+    document.getElementById('cmp-after-risk').textContent = riskText;
+  }
+
+  // ── PILOT
+  function updatePilot() {
+    const pilotMW            = parseFloat(pilotSlider.value);
+    const wasteHeatPercent   = parseFloat(wasteHeatSlider.value);
+    const recoveryEfficiency = parseFloat(recovEffSlider.value);
+
+    const totalHeat     = pilotMW * 0.8;
+    const usableHeat    = totalHeat * (wasteHeatPercent / 100);
+    const recoveredHeat = usableHeat * (recoveryEfficiency / 100);
+    const waterProduced = recoveredHeat * 15000;
+    const waterConsumed = pilotMW * 150000;
+    const offsetPct     = (waterProduced / waterConsumed) * 100;
+    const impact90      = waterProduced * 90;
+
+    document.getElementById('pilot-water').textContent   = fmt(waterProduced) + ' L';
+    document.getElementById('pilot-offset').textContent  = offsetPct.toFixed(1) + '%';
+    document.getElementById('pilot-90days').textContent  = fmt(impact90) + ' L';
+  }
+
+  // ── ANIMATE
+  function animateNum(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('count-anim');
+    void el.offsetWidth;
+    el.textContent = val;
+    el.classList.add('count-anim');
+  }
+
+  // ── INIT PILOT
+  updatePilot();
+
+  // ── SCROLL REVEAL
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && lastResults) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  ['outputs-inner', 'compare-inner', 'pilot-inner'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+</script>
+</body>
+</html>
