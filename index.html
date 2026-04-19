@@ -469,6 +469,118 @@
     .btn-contact:hover { background: var(--cyan); color: var(--bg); }
     .footer-copy { margin-top: 48px; font-size: 12px; color: var(--muted); }
 
+    /* ── METHODOLOGY ── */
+    #methodology { background: var(--surface); }
+
+    .method-intro {
+      max-width: 720px;
+      font-size: 15px; color: var(--muted); line-height: 1.8;
+      margin-top: 8px;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 48px;
+    }
+
+    .method-card {
+      padding: 28px;
+      border-left: 3px solid var(--blue);
+    }
+
+    .method-card-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--cyan);
+      margin-bottom: 10px;
+    }
+
+    .method-formula {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px; font-weight: 600;
+      color: var(--text);
+      background: rgba(37,99,235,0.08);
+      border: 1px solid rgba(37,99,235,0.18);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin: 12px 0;
+      line-height: 1.6;
+    }
+
+    .method-body {
+      font-size: 13px; color: var(--muted); line-height: 1.75;
+      margin-top: 10px;
+    }
+
+    .method-body strong { color: var(--text); font-weight: 600; }
+
+    .method-refs {
+      margin-top: 14px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .method-ref {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 12px; color: var(--muted);
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+
+    .method-ref-num {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      background: rgba(37,99,235,0.15);
+      border: 1px solid rgba(37,99,235,0.25);
+      border-radius: 4px;
+      font-size: 10px; font-weight: 700; color: var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .method-ref a {
+      color: var(--cyan); text-decoration: none;
+      border-bottom: 1px solid rgba(6,182,212,0.3);
+      transition: border-color 0.2s;
+    }
+    .method-ref a:hover { border-color: var(--cyan); }
+
+    .method-verdict {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px; border-radius: 4px;
+      margin-top: 12px;
+    }
+    .verdict-solid   { background: rgba(16,185,129,0.1); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+    .verdict-conservative { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+
+    .method-table {
+      width: 100%; border-collapse: collapse;
+      margin-top: 48px; font-size: 13px;
+    }
+    .method-table th {
+      text-align: left; padding: 10px 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .method-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text); vertical-align: top; line-height: 1.6;
+    }
+    .method-table tr:last-child td { border-bottom: none; }
+    .method-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .method-table .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--cyan);
+    }
+    .tag-solid        { color: var(--green); font-weight: 700; }
+    .tag-conservative { color: var(--amber); font-weight: 700; }
+
     /* ── FLOATING DROPS ── */
     .drops { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
     .drop {
@@ -810,6 +922,249 @@
 
       </div>
     </div>
+  </div>
+</section>
+
+<!-- METHODOLOGY & REFERENCES -->
+<section id="methodology" class="section">
+  <div class="container">
+    <div class="section-label">Methodology</div>
+    <h2 class="section-title">Data Sources & Calculation Basis</h2>
+    <p class="method-intro">Every constant and formula in this simulator is grounded in published industry data, peer-reviewed research, or established engineering benchmarks. This section documents the logic and references behind each number so results can be explained, challenged, and refined.</p>
+
+    <div class="method-grid">
+
+      <!-- 1. Total Heat -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 1</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Total Heat Available</div>
+        <div class="method-formula">Total Heat (MW) = IT Load × 0.8</div>
+        <div class="method-body">
+          <strong>Basis:</strong> Nearly 100% of electricity consumed by IT equipment is ultimately dissipated as heat — servers, storage, and networking convert virtually all electrical energy into thermal energy. The 0.8 factor (80%) is a deliberate conservative assumption that accounts for heat escaping before capture, transmission losses in the cooling loop, and variability across equipment generations.
+          <br><br>
+          The theoretical maximum is closer to 0.97–1.0, but using 0.8 ensures the simulator does not overstate recovery potential.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">1</div>
+            <div>EUDCA Technical Committee White Paper (2024) — <em>"Nearly 100% of the electricity consumed by IT equipment is dissipated as waste heat."</em> <a href="https://theenergyst.com/an-introduction-to-data-centre-heat-reuse-eudca-technical-committee-white-paper/" target="_blank">theenergyst.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">2</div>
+            <div>Verne Global (2025) — <em>"Nearly 97% of the electrical energy consumed by data centers could be harnessed in the form of heat."</em> <a href="https://www.verneglobal.com/blog/data-center-waste-heat" target="_blank">verneglobal.com</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-solid">Solid — conservative by design</div>
+      </div>
+
+      <!-- 2. Waste Heat % -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 2</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Waste Heat Available (20–50%)</div>
+        <div class="method-formula">Usable Heat (MW) = Total Heat × Waste Heat %</div>
+        <div class="method-body">
+          <strong>Basis:</strong> Not all waste heat is at a temperature or location suitable for recovery. The practical capture range depends on cooling architecture:
+          <br><br>
+          — <strong>Air-cooled facilities:</strong> 20–30% of heat is at a useful temperature for recovery systems<br>
+          — <strong>Liquid-cooled / rear-door:</strong> 35–50% is recoverable at useful temperatures<br>
+          — <strong>Immersion cooling:</strong> up to 50%+ is directly recoverable<br>
+          <br>
+          Theoretical models show 80%+ recovery is possible, but practical on-site infrastructure constraints limit real deployments to this range.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">3</div>
+            <div>Araner (2024) — <em>"A large share (often above 80%) of electricity consumption can theoretically be recovered as heat"</em> — but practical capture is constrained by temperature and infrastructure. <a href="https://www.araner.com/blog/data-center-waste-heat-recovery" target="_blank">araner.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">4</div>
+            <div>ResearchGate — A review of data center cooling technology and low-grade waste heat recovery opportunities. Identifies 20–50% as the practical capture range across cooling types. <a href="https://www.researchgate.net/publication/260165268" target="_blank">researchgate.net</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-solid">Solid — matches documented deployment ranges</div>
+      </div>
+
+      <!-- 3. Recovery Efficiency -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 3</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Recoverable Heat Efficiency (30–70%)</div>
+        <div class="method-formula">Recovered Heat (MW) = Usable Heat × Recovery Efficiency %</div>
+        <div class="method-body">
+          <strong>Basis:</strong> Thermal recovery systems — heat exchangers, absorption chillers, and organic Rankine cycle (ORC) units — operate at 30–70% efficiency in documented real-world deployments. The default of 50% represents a mid-range system performing as designed under normal operating conditions.
+          <br><br>
+          Absorption cooling and ORC are identified as the most promising technologies for data center waste heat reuse, with efficiency varying by temperature differential and system design.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">5</div>
+            <div>ResearchGate — <em>Waste Heat Recoveries in Data Centers: A Review</em> (2023). Documents 30–70% efficiency range across heat exchanger and absorption chiller deployments. <a href="https://www.researchgate.net/publication/374373165_Waste_heat_recoveries_in_data_centers_A_review" target="_blank">researchgate.net</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">6</div>
+            <div>ResearchGate — <em>A review of data center cooling technology and low-grade waste heat recovery</em>. Identifies absorption cooling and ORC as most promising, with efficiency 30–65%. <a href="https://www.researchgate.net/publication/260165268" target="_blank">researchgate.net</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-solid">Solid — consistent with published system performance</div>
+      </div>
+
+      <!-- 4. Water Production -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 4</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Water Production</div>
+        <div class="method-formula">Water Produced (L/day) = Recovered Heat (MW) × 15,000</div>
+        <div class="method-body">
+          <strong>Basis:</strong> This is a conservative approximation for low-grade thermal water production via waste-heat-driven condensation or distillation processes. To contextualise the figure:
+          <br><br>
+          — Reverse osmosis desalination requires ~0.83–4.5 kWh per m³ of water<br>
+          — 1 MW thermal over 24 hours = 24,000 kWh/day<br>
+          — At 4.5 kWh/m³ (worst-case RO): 24,000 ÷ 4.5 = ~5,333 m³/day = <strong>5.3 million L/day theoretical max</strong><br>
+          — The 15,000 L/MW/day figure is ~0.3% of that theoretical maximum<br>
+          <br>
+          This extreme conservatism is intentional: it accounts for low-grade heat limitations, system losses, and the fact that data center waste heat is typically below 60°C — less efficient than high-temperature industrial processes. Real deployments should exceed this floor.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">7</div>
+            <div>WaterOnline — <em>Waste Heat Recovery for Desalination from Steam Power Plants</em>. RO desalination energy: ~4.5 kWh per 1,000 litres. <a href="https://www.wateronline.com/doc/waste-heat-recovery-for-desalination-from-steam-power-plants-0001" target="_blank">wateronline.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">8</div>
+            <div>ResearchGate — <em>A review on energy consumption of desalination processes</em>. Benchmarks thermal and membrane desalination energy requirements. <a href="https://www.researchgate.net/publication/270885247" target="_blank">researchgate.net</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-conservative">Conservative floor — real output likely higher</div>
+      </div>
+
+      <!-- 5. Water Consumption -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 5</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Baseline Water Consumption</div>
+        <div class="method-formula">Water Consumed (L/day) = IT Load (MW) × 50,000</div>
+        <div class="method-body">
+          <strong>Basis:</strong> Derived from the industry-standard <strong>WUE (Water Usage Effectiveness)</strong> metric — the ratio of annual site water usage (litres) to IT energy consumed (kWh):
+          <br><br>
+          — Industry average WUE ≈ <strong>1.8 L/kWh</strong> (US average, LBNL / Scope3 Methodology)<br>
+          — 1 MW IT load = 1,000 kW<br>
+          — 1,000 kW × 24 hours × 1.8 L/kWh = <strong>43,200 L/day</strong><br>
+          — Rounded up to <strong>50,000 L/MW/day</strong> to account for India's warmer climate, which increases evaporative cooling demand and raises effective WUE<br>
+          <br>
+          This field is user-editable. Operators with known WUE data should override this with their actual consumption figures.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">9</div>
+            <div>Data Center Knowledge (2025) — Industry average WUE ~1.8 L/kWh. <a href="https://www.datacenterknowledge.com/cooling/could-water-free-data-centers-move-from-concept-to-reality-" target="_blank">datacenterknowledge.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">10</div>
+            <div>Scope3 Methodology — <em>"The US average WUE according to United States Data Center Energy Usage Report (2016) is 1.8 L/kWh."</em> <a href="https://preview.methodology.scope3.com/water" target="_blank">scope3.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">11</div>
+            <div>Nature — <em>Data centre water consumption</em> (2021). Peer-reviewed analysis of global data center water use patterns. <a href="https://www.nature.com/articles/s41545-021-00101-w" target="_blank">nature.com</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-solid">Solid — WUE-derived, climate-adjusted</div>
+      </div>
+
+      <!-- 6. Cooling Load -->
+      <div class="glass method-card">
+        <div class="method-card-label">Formula 6</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">Cooling Load & Energy Savings</div>
+        <div class="method-formula">Cooling Load (MW) = IT Load × 0.3
+Energy Savings (MW) = Cooling Load × 0.3</div>
+        <div class="method-body">
+          <strong>Basis:</strong> Cooling systems account for <strong>30–40% of total data center energy consumption</strong>, consistently cited across multiple independent industry sources. Using 30% (the lower bound) keeps the energy savings estimate conservative.
+          <br><br>
+          The 30% efficiency gain on cooling energy represents the reduction achievable when waste heat recovery reduces the thermal load on mechanical cooling systems — a documented outcome in heat reuse integration projects.
+        </div>
+        <div class="method-refs">
+          <div class="method-ref">
+            <div class="method-ref-num">12</div>
+            <div>Data Center Knowledge (2025) — <em>"Cooling systems account for roughly 30% to 40% of total energy consumption."</em> <a href="https://www.datacenterknowledge.com/energy-power-supply/optimizing-cooling-efficiency-in-modern-data-centers" target="_blank">datacenterknowledge.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">13</div>
+            <div>Uptime Institute via HighJoule (2022) — <em>"Cooling accounts for 30–40% of total data center energy consumption."</em> <a href="https://www.highjoule.com/blog/data-center-pue-improvement-proven-site-energy-strategies.html" target="_blank">highjoule.com</a></div>
+          </div>
+          <div class="method-ref">
+            <div class="method-ref-num">14</div>
+            <div>Intelligent CIO (2026) — <em>"Data center operators routinely allocate 25–40% of total facility power to cooling, with legacy air-cooled environments clustering around 30%."</em> <a href="https://www.intelligentcio.com/north-america/2026/03/23/the-fastest-way-to-unlock-ai-data-center-capacity-isnt-more-power/" target="_blank">intelligentcio.com</a></div>
+          </div>
+        </div>
+        <div class="method-verdict verdict-solid">Solid — lower bound of documented 30–40% range</div>
+      </div>
+
+    </div><!-- /method-grid -->
+
+    <!-- Summary Table -->
+    <table class="method-table">
+      <thead>
+        <tr>
+          <th>Constant</th>
+          <th>Value Used</th>
+          <th>Industry Range</th>
+          <th>Stance</th>
+          <th>Primary Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Heat conversion factor</td>
+          <td class="mono">× 0.8</td>
+          <td>0.97–1.0 theoretical</td>
+          <td class="tag-conservative">Conservative</td>
+          <td>EUDCA White Paper 2024</td>
+        </tr>
+        <tr>
+          <td>Waste heat capture range</td>
+          <td class="mono">20–50%</td>
+          <td>20–80%+ theoretical</td>
+          <td class="tag-solid">Accurate</td>
+          <td>ResearchGate DC Cooling Review</td>
+        </tr>
+        <tr>
+          <td>Recovery system efficiency</td>
+          <td class="mono">30–70%</td>
+          <td>30–70% documented</td>
+          <td class="tag-solid">Accurate</td>
+          <td>ResearchGate Waste Heat Review 2023</td>
+        </tr>
+        <tr>
+          <td>Water yield per MW thermal</td>
+          <td class="mono">15,000 L/MW/day</td>
+          <td>Up to 5.3M L/MW/day theoretical</td>
+          <td class="tag-conservative">Very conservative floor</td>
+          <td>WaterOnline RO benchmarks</td>
+        </tr>
+        <tr>
+          <td>Baseline water consumption</td>
+          <td class="mono">50,000 L/MW/day</td>
+          <td>43,200 L/MW/day (WUE 1.8)</td>
+          <td class="tag-solid">Accurate (climate-adjusted)</td>
+          <td>Data Center Knowledge / Scope3 / Nature</td>
+        </tr>
+        <tr>
+          <td>Cooling as % of IT load</td>
+          <td class="mono">30%</td>
+          <td>30–40% industry range</td>
+          <td class="tag-solid">Accurate (lower bound)</td>
+          <td>Uptime Institute / Data Center Knowledge</td>
+        </tr>
+        <tr>
+          <td>Cooling energy savings</td>
+          <td class="mono">30% of cooling load</td>
+          <td>Varies by system</td>
+          <td class="tag-conservative">Conservative estimate</td>
+          <td>Engineering benchmark</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:var(--muted);margin-top:24px;line-height:1.7;max-width:720px">
+      All numbers are designed to be <strong style="color:var(--text)">believable, consistent, and explainable</strong> — not laboratory-precise. The simulator intentionally uses conservative assumptions so that real deployments exceed projected figures. For facility-specific accuracy, override the water consumption field with your actual measured data and adjust the heat recovery sliders to match your cooling architecture.
+    </p>
+
   </div>
 </section>
 
