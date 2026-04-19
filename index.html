@@ -571,7 +571,7 @@
         <div class="field">
           <label>Water Consumption (litres / day)</label>
           <input type="number" id="water-consumption" min="0" step="1000" />
-          <div class="field-note">Auto-calculated from IT Load at 150,000 L/MW/day. Override as needed.</div>
+          <div class="field-note">Auto-calculated at 50,000 L/MW/day — based on industry WUE of ~1.8 L/kWh in warm-climate facilities. Override with your actual data.</div>
         </div>
       </div>
 
@@ -866,7 +866,7 @@
   itloadSlider.addEventListener('input', function () {
     document.getElementById('itload-val').textContent = this.value + ' MW';
     if (!userEditedWater) {
-      waterInput.value = parseFloat(this.value) * 150000;
+      waterInput.value = parseFloat(this.value) * 50000;
     }
     if (lastResults) runCalculation();
   });
@@ -892,14 +892,14 @@
   });
 
   // ── INIT
-  waterInput.value = 20 * 150000;
+  waterInput.value = 20 * 50000;
 
   // ── CORE CALCULATION
   function runCalculation() {
     const inputMW            = parseFloat(itloadSlider.value);
     const wasteHeatPercent   = parseFloat(wasteHeatSlider.value);
     const recoveryEfficiency = parseFloat(recovEffSlider.value);
-    const rawWater           = parseFloat(waterInput.value) || (inputMW * 150000);
+    const rawWater           = parseFloat(waterInput.value) || (inputMW * 50000);
 
     const IT_Load       = inputMW;
     const totalHeat     = IT_Load * 0.8;
@@ -1001,7 +1001,7 @@
     const usableHeat    = totalHeat * (wasteHeatPercent / 100);
     const recoveredHeat = usableHeat * (recoveryEfficiency / 100);
     const waterProduced = recoveredHeat * 15000;
-    const waterConsumed = pilotMW * 150000;
+    const waterConsumed = pilotMW * 50000;
     const offsetPct     = (waterProduced / waterConsumed) * 100;
     const impact90      = waterProduced * 90;
 
